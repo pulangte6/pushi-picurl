@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片链接生成器</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; }
+  .container { max-width: 900px; width: 100%; }
+  h1 { font-size: 28px; margin-bottom: 8px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  .card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 16px; overflow: hidden; margin-bottom: 24px; transition: transform 0.2s, box-shadow 0.2s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(102,126,234,0.15); }
+  .card-img { width: 100%; display: block; }
+  .card-body { padding: 20px 24px; }
+  .card-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #c0c0ff; }
+  .link-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .link-label { font-size: 12px; color: #888; min-width: 70px; white-space: nowrap; }
+  .link-input { flex: 1; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 8px; padding: 10px 14px; color: #aaa; font-size: 13px; font-family: "Cascadia Code", "Fira Code", monospace; word-break: break-all; }
+  .btn-copy { background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; transition: opacity 0.2s; }
+  .btn-copy:hover { opacity: 0.85; }
+  .btn-copy.copied { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #000; }
+  .tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #2a2a4a; color: #aaa; }
+  .footer { text-align: center; color: #555; font-size: 12px; margin-top: 40px; padding: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🖼️ 图片链接生成器</h1>
+  <p class="subtitle">Generated image links — click copy to get direct URLs</p>
+
+  <div class="card">
+    <img class="card-img" src="20260715_135910_img1.png" alt="Navy Jacket">
+    <div class="card-body">
+      <div class="card-title">📌 图片 1 — 藏青色立领夹克</div>
+      <div class="link-row">
+        <span class="link-label">本地路径</span>
+        <input class="link-input" value="E:\codex-data\.codex\skills\pushi-imagegen\output\images\20260715_135910_img1.png" readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">相对链接</span>
+        <input class="link-input" value="./20260715_135910_img1.png" readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">file://</span>
+        <input class="link-input" value="file:///E:/codex-data/.codex/skills/pushi-imagegen/output/images/20260715_135910_img1.png" readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">data:image</span>
+        <input class="link-input" id="dataUrl1" value="加载中..." readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="tags">
+        <span class="tag">PNG</span>
+        <span class="tag">~1.06 MB</span>
+        <span class="tag">2026-07-15 13:59</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <img class="card-img" src="20260715_140420_img1.png" alt="Jacket Variant">
+    <div class="card-body">
+      <div class="card-title">📌 图片 2 — 藏青色立领夹克</div>
+      <div class="link-row">
+        <span class="link-label">本地路径</span>
+        <input class="link-input" value="E:\codex-data\.codex\skills\pushi-imagegen\output\images\20260715_140420_img1.png" readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">相对链接</span>
+        <input class="link-input" value="./20260715_140420_img1.png" readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">file://</span>
+        <input class="link-input" value="file:///E:/codex-data/.codex/skills/pushi-imagegen/output/images/20260715_140420_img1.png" readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">data:image</span>
+        <input class="link-input" id="dataUrl2" value="加载中..." readonly onclick="this.select()">
+        <button class="btn-copy" onclick="copyLink(this)">复制</button>
+      </div>
+      <div class="tags">
+        <span class="tag">PNG</span>
+        <span class="tag">~0.98 MB</span>
+        <span class="tag">2026-07-15 14:04</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Generated by Agnes-2.0-Flash · Click any link to select, then Copy to use
+  </div>
+</div>
+
+<script>
+// Generate data URLs
+async function loadDataUrl(inputId, filePath) {
+  try {
+    const resp = await fetch(filePath);
+    const blob = await resp.blob();
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      document.getElementById(inputId).value = reader.result.substring(0, 200) + '... (' + (reader.result.length / 1024 / 1024).toFixed(2) + ' MB base64)';
+    };
+    reader.readAsDataURL(blob);
+  } catch(e) {
+    document.getElementById(inputId).value = '(无法加载 — 请在Web服务器环境下打开)';
+  }
+}
+
+function copyLink(btn) {
+  const input = btn.previousElementSibling;
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => {
+    btn.textContent = '✓ 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '复制';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+
+loadDataUrl('dataUrl1', '20260715_135910_img1.png');
+loadDataUrl('dataUrl2', '20260715_140420_img1.png');
+</script>
+</body>
+</html>
