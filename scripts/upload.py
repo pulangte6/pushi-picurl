@@ -1,51 +1,110 @@
-import os
+﻿import os
 import sys
 import json
 import argparse
 import requests
 
-def upload_image_quax(file_path, title=None):
-    """Upload image to qu.ax and get URL."""
+# Ordered list of services. The first one that succeeds is used.
+# Add new services here. Each entry: (id, label, upload_fn).
+SERVICES = []
+
+def register(name):
+    def deco(fn):
+        fn.__service_name__ = name
+        SERVICES.append((name, fn))
+        return fn
+    return deco
+
+
+@register('uguu')
+def upload_uguu(file_path):
+    """Upload to uguu.se. Returns a direct image URL.
+
+    Note: uguu.se links are temporary (files expire after a few hours).
+    """
+    url = 'https://uguu.se/upload?output=json'
+    with open(file_path, 'rb') as f:
+        files = {'files[]': (os.path.basename(file_path), f, 'application/octet-stream')}
+        resp = requests.post(url, files=files, headers={'User-Agent': _UA}, timeout=60)
+
+    data = resp.json()
+    if not data.get('success'):
+        raise RuntimeError(f"uguu.se: {data}")
+    files_info = data.get('files', [])
+    if not files_info:
+        raise RuntimeError(f"uguu.se: no file in response {data}")
+    return files_info[0]['url']
+
+
+@register('quax')
+def upload_quax(file_path):
+    """Upload to qu.ax. Returns a shareable viewer URL (HTML page, not direct image)."""
+    url = 'https://qu.ax/upload'
+    with open(file_path, 'rb') as f:
+        files = {'file': (os.path.basename(file_path), f, 'application/octet-stream')}
+        resp = requests.post(url, files=files, headers={'User-Agent': _UA}, timeout=60)
+
+    data = resp.json()
+    if not data.get('success'):
+        raise RuntimeError(f"qu.ax: {data}")
+    files_info = data.get('files', [])
+    if not files_info:
+        raise RuntimeError(f"qu.ax: no file in response {data}")
+    return files_info[0]['url']
+
+
+_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+# Default priority order. uguu returns direct image links; qu.ax is the fallback.
+DEFAULT_ORDER = ['uguu', 'quax']
+
+
+def upload_image(file_path, service=None):
+    """Upload an image and return its public URL.
+
+    service: service id to force ('uguu' or 'quax'). If None, tries services in
+    DEFAULT_ORDER until one succeeds.
+    """
     if not os.path.exists(file_path):
         print(f"ERROR: File not found: {file_path}", file=sys.stderr)
         sys.exit(1)
 
-    with open(file_path, 'rb') as f:
-        files = {'file': (os.path.basename(file_path), f, 'application/octet-stream')}
-        data = {}
-        if title:
-            data['title'] = title
+    by_id = {sid: fn for sid, fn in SERVICES}
+    order = [service] if service else DEFAULT_ORDER
 
-        resp = requests.post('https://qu.ax/upload', files=files, data=data, timeout=60)
+    last_err = None
+    for sid in order:
+        if sid not in by_id:
+            print(f"ERROR: Unknown service '{sid}'. Available: {list(by_id)}", file=sys.stderr)
+            sys.exit(1)
+        try:
+            url = by_id[sid](file_path)
+            if url:
+                return sid, url
+        except Exception as e:
+            last_err = e
+            print(f"[{sid}] failed: {e}; trying next...", file=sys.stderr)
 
-    if resp.status_code != 200:
-        print(f"ERROR: HTTP {resp.status_code}", file=sys.stderr)
-        print(resp.text, file=sys.stderr)
-        sys.exit(1)
-
-    result = resp.json()
-    if not result.get('success'):
-        print(f"ERROR: {result}", file=sys.stderr)
-        sys.exit(1)
-
-    return result['files'][0]['url']
+    print(f"ERROR: All upload services failed. Last error: {last_err}", file=sys.stderr)
+    sys.exit(1)
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Upload images to qu.ax')
+    parser = argparse.ArgumentParser(description='Upload images to a free image host')
     parser.add_argument('files', nargs='+', help='Image file paths to upload')
-    parser.add_argument('--title', default=None, help='Title for the image')
+    parser.add_argument('--service', default=None,
+                        help='Service id to force (uguu, quax). Default: try uguu then quax.')
     args = parser.parse_args()
 
-    urls = []
+    results = []
     for file_path in args.files:
         print(f"Uploading: {file_path}")
-        url = upload_image_quax(file_path, args.title)
-        print(f"  -> {url}")
-        urls.append(url)
+        sid, url = upload_image(file_path, args.service)
+        print(f"  [{sid}] -> {url}")
+        results.append(url)
 
     print("\nDone!")
-    for u in urls:
+    for u in results:
         print(u)
 
 
