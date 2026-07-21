@@ -1,4 +1,4 @@
-﻿---
+---
 name: pushi-picurl
 description: "Upload images to image hosting services and generate public image links. Uses uguu.se (direct image links) by default, with qu.ax as a fallback. Use when Codex needs to upload an image file to get a shareable URL, embed images in documentation/messages, or provide a direct image link. Triggers on: upload image, generate image link, get image URL, share image online, image hosting, send image link, picurl, picture url."
 ---
