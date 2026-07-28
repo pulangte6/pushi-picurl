@@ -36,6 +36,24 @@ def upload_uguu(file_path):
     return files_info[0]['url']
 
 
+@register('litterbox')
+def upload_litterbox(file_path):
+    """Upload to litterbox.catbox.moe. Returns a direct image URL.
+
+    Note: litterbox links are temporary (default expiry 72h).
+    """
+    url = 'https://litterbox.catbox.moe/resources/internals/api.php'
+    with open(file_path, 'rb') as f:
+        files = {'fileToUpload': (os.path.basename(file_path), f, 'application/octet-stream')}
+        data = {'reqtype': 'fileupload', 'time': '72h'}
+        resp = requests.post(url, files=files, data=data, headers={'User-Agent': _UA}, timeout=60)
+
+    result = resp.text.strip()
+    if not result or not result.startswith('http'):
+        raise RuntimeError(f"litterbox: unexpected response: {result!r}")
+    return result
+
+
 @register('quax')
 def upload_quax(file_path):
     """Upload to qu.ax. Returns a shareable viewer URL (HTML page, not direct image)."""
@@ -55,15 +73,15 @@ def upload_quax(file_path):
 
 _UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
-# Default priority order. uguu returns direct image links; qu.ax is the fallback.
-DEFAULT_ORDER = ['uguu', 'quax']
+# Default priority order. uguu and litterbox return direct image links; qu.ax is the fallback.
+DEFAULT_ORDER = ['uguu', 'litterbox', 'quax']
 
 
 def upload_image(file_path, service=None):
     """Upload an image and return its public URL.
 
-    service: service id to force ('uguu' or 'quax'). If None, tries services in
-    DEFAULT_ORDER until one succeeds.
+    service: service id to force ('uguu', 'litterbox', or 'quax'). If None, tries
+    services in DEFAULT_ORDER until one succeeds.
     """
     if not os.path.exists(file_path):
         print(f"ERROR: File not found: {file_path}", file=sys.stderr)
@@ -93,7 +111,7 @@ def main():
     parser = argparse.ArgumentParser(description='Upload images to a free image host')
     parser.add_argument('files', nargs='+', help='Image file paths to upload')
     parser.add_argument('--service', default=None,
-                        help='Service id to force (uguu, quax). Default: try uguu then quax.')
+                        help='Service id to force (uguu, litterbox, quax). Default: try uguu, litterbox, then quax.')
     args = parser.parse_args()
 
     results = []
