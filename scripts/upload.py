@@ -1,4 +1,4 @@
-import os, sys, json, argparse, requests
+﻿import os, sys, json, argparse, requests
 
 SERVICES = []
 
@@ -97,7 +97,7 @@ def upload_quax(file_path):
 
 _UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
-DEFAULT_ORDER = ['tucang', 'uguu', 'litterbox', 'freeimage', 'quax']
+DEFAULT_ORDER = ['tucang', 'uguu']
 
 
 def upload_image(file_path, service=None):
@@ -157,4 +157,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
