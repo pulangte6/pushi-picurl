@@ -1,2 +1,9 @@
 .git
-__pycache__/ *.pyc output/ .env scripts/.env *.env scripts/fix_order.py scripts/modify_order.py
+__pycache__/
+*.pyc
+output/
+.env
+scripts/.env
+*.env
+scripts/fix_order.py
+scripts/modify_order.py
