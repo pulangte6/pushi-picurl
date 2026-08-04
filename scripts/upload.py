@@ -1,4 +1,4 @@
-﻿import os, sys, json, argparse, requests
+import os, sys, json, argparse, requests
 
 SERVICES = []
 
